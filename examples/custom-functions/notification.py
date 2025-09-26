@@ -1,28 +1,25 @@
+import asyncio
 import os
 import sys
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-import asyncio
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
-from pydantic import BaseModel
-
-from browser_use import ActionResult, Agent, Controller
 
 load_dotenv()
 
-controller = Controller()
+from browser_use import ActionResult, Agent, ChatOpenAI, Tools
+
+tools = Tools()
 
 
-@controller.registry.action('Done with task ')
+@tools.registry.action('Done with task')
 async def done(text: str):
-	import yagmail
+	import yagmail  # type: ignore
 
 	# To send emails use
 	# STEP 1: go to https://support.google.com/accounts/answer/185833
-	# STEP 2: Create an app password (you cant use here your normal gmail password)
+	# STEP 2: Create an app password (you can't use here your normal gmail password)
 	# STEP 3: Use the app password in the code below for the password
 	yag = yagmail.SMTP('your_email@gmail.com', 'your_app_password')
 	yag.send(
@@ -36,8 +33,8 @@ async def done(text: str):
 
 async def main():
 	task = 'go to brower-use.com and then done'
-	model = ChatOpenAI(model='gpt-4o')
-	agent = Agent(task=task, llm=model, controller=controller)
+	model = ChatOpenAI(model='gpt-4.1-mini')
+	agent = Agent(task=task, llm=model, tools=tools)
 
 	await agent.run()
 

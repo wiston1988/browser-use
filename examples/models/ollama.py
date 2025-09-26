@@ -1,34 +1,10 @@
-# import os
-
-# Optional: Disable telemetry
-# os.environ["ANONYMIZED_TELEMETRY"] = "false"
-
-# Optional: Set the OLLAMA host to a remote server
-# os.environ["OLLAMA_HOST"] = "http://x.x.x.x:11434"
-
-import asyncio
-from browser_use import Agent
-from browser_use.agent.views import AgentHistoryList
-from langchain_ollama import ChatOllama
+# 1. Install Ollama: https://github.com/ollama/ollama
+# 2. Run `ollama serve` to start the server
+# 3. In a new terminal, install the model you want to use: `ollama pull llama3.1:8b` (this has 4.9GB)
 
 
-async def run_search() -> AgentHistoryList:
-    agent = Agent(
-        task="Search for a 'browser use' post on the r/LocalLLaMA subreddit and open it.",
-        llm=ChatOllama(
-            model="qwen2.5:32b-instruct-q4_K_M",
-            num_ctx=32000,
-        ),
-    )
+from browser_use import Agent, ChatOllama
 
-    result = await agent.run()
-    return result
+llm = ChatOllama(model='llama3.1:8b')
 
-
-async def main():
-    result = await run_search()
-    print("\n\n", result)
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
+Agent('find the founders of browser-use', llm=llm).run_sync()

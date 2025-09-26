@@ -1,30 +1,27 @@
-import asyncio
 import os
 
-from langchain_ollama import ChatOllama
+from dotenv import load_dotenv
 
-from browser_use import Agent
+from browser_use import Agent, ChatOpenAI
+
+load_dotenv()
+import asyncio
+
+# get an api key from https://modelstudio.console.alibabacloud.com/?tab=playground#/api-key
+api_key = os.getenv('ALIBABA_CLOUD')
+base_url = 'https://dashscope-intl.aliyuncs.com/compatible-mode/v1'
+
+# so far we only had success with qwen-vl-max
+# other models, even qwen-max, do not return the right output format. They confuse the action schema.
+# E.g. they return actions: [{"go_to_url": "google.com"}] instead of [{"go_to_url": {"url": "google.com"}}]
+# If you want to use smaller models and you see they mix up the action schema, add concrete examples to your prompt of the right format.
+llm = ChatOpenAI(model='qwen-vl-max', api_key=api_key, base_url=base_url)
 
 
-async def run_search():
-	agent = Agent(
-		task=(
-			'1. Go to https://www.reddit.com/r/LocalLLaMA'
-			"2. Search for 'browser use' in the search bar"
-			'3. Click search'
-			'4. Call done'
-		),
-		llm=ChatOllama(
-			# model='qwen2.5:32b-instruct-q4_K_M',
-			# model='qwen2.5:14b',
-			model='qwen2.5:latest',
-			num_ctx=128000,
-		),
-		max_actions_per_step=1,
-	)
-
+async def main():
+	agent = Agent(task='go find the founders of browser-use', llm=llm, use_vision=True, max_actions_per_step=1)
 	await agent.run()
 
 
-if __name__ == '__main__':
-	asyncio.run(run_search())
+if '__main__' == __name__:
+	asyncio.run(main())
